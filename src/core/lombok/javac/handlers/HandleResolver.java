@@ -79,7 +79,7 @@ public class HandleResolver extends JavacAnnotationHandler<Resolver> {
 	public void generateResolverForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelResolver, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (checkForTypeLevelResolver) {
 			if (hasAnnotation(Resolver.class, typeNode)) {
-				//The annotation will make it happen, so we can skip it.
+				// The annotation will make it happen, so we can skip it.
 				return;
 			}
 		}
@@ -97,11 +97,11 @@ public class HandleResolver extends JavacAnnotationHandler<Resolver> {
 		for (JavacNode field : typeNode.down()) {
 			if (field.getKind() != Kind.FIELD) continue;
 			JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
-			//Skip fields that start with $
+			// Skip fields that start with $
 			if (fieldDecl.name.toString().startsWith("$")) continue;
-			//Skip static fields.
+			// Skip static fields.
 			if ((fieldDecl.mods.flags & Flags.STATIC) != 0) continue;
-			//Skip final fields.
+			// Skip final fields.
 			if ((fieldDecl.mods.flags & Flags.FINAL) != 0) continue;
 			
 			generateResolverForField(field, errorNode, level, onMethod, onParam);
@@ -115,17 +115,21 @@ public class HandleResolver extends JavacAnnotationHandler<Resolver> {
 	 * 
 	 * The difference between this call and the handle method is as follows:
 	 * 
-	 * If there is a {@code lombok.Resolver} annotation on the field, it is used and the
-	 * same rules apply (e.g. warning if the method already exists, stated access level applies).
-	 * If not, the setter is still generated if it isn't already there, though there will not
-	 * be a warning if its already there. The default access level is used.
+	 * If there is a {@code lombok.Resolver} annotation on the field, it is used
+	 * and the same rules apply (e.g. warning if the method already exists,
+	 * stated access level applies). If not, the setter is still generated if it
+	 * isn't already there, though there will not be a warning if its already
+	 * there. The default access level is used.
 	 * 
-	 * @param fieldNode The node representing the field you want a setter for.
-	 * @param pos The node responsible for generating the setter (the {@code @Data} or {@code @Resolver} annotation).
+	 * @param fieldNode
+	 *            The node representing the field you want a setter for.
+	 * @param pos
+	 *            The node responsible for generating the setter (the
+	 *            {@code @Data} or {@code @Resolver} annotation).
 	 */
 	public void generateResolverForField(JavacNode fieldNode, JavacNode sourceNode, AccessLevel level, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (hasAnnotation(Resolver.class, fieldNode)) {
-			//The annotation will make it happen, so we can skip it.
+			// The annotation will make it happen, so we can skip it.
 			return;
 		}
 		
@@ -189,13 +193,12 @@ public class HandleResolver extends JavacAnnotationHandler<Resolver> {
 				if (whineIfExists) {
 					String altNameExpl = "";
 					if (!altName.equals(methodName)) altNameExpl = String.format(" (%s)", altName);
-					fieldNode.addWarning(
-						String.format("Not generating %s(): A method with that name already exists%s", methodName, altNameExpl));
+					fieldNode.addWarning(String.format("Not generating %s(): A method with that name already exists%s", methodName, altNameExpl));
 				}
 				return;
 			default:
 			case NOT_EXISTS:
-				//continue scanning the other alt names.
+				// continue scanning the other alt names.
 			}
 		}
 		
@@ -273,7 +276,9 @@ public class HandleResolver extends JavacAnnotationHandler<Resolver> {
 		}
 		
 		if (methodType == null) {
-			//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
+			// WARNING: Do not use field.getSymbolTable().voidType - that field
+			// has gone through non-backwards compatible API changes within
+			// javac1.6.
 			methodType = treeMaker.Type(Javac.createVoidType(field.getSymbolTable(), CTC_VOID));
 			returnStatement = null;
 		}
@@ -291,8 +296,7 @@ public class HandleResolver extends JavacAnnotationHandler<Resolver> {
 			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
 		}
 		
-		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
-				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source.get(), field.getContext());
+		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType, methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source.get(), field.getContext());
 		copyJavadoc(field, decl, CopyJavadoc.SETTER);
 		return decl;
 	}
@@ -304,7 +308,7 @@ public class HandleResolver extends JavacAnnotationHandler<Resolver> {
 	public static java.util.List<String> toAllSetterNames(AST<?, ?, ?> ast, AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean) {
 		return toAllAccessorNames(ast, accessors, fieldName, isBoolean, RESOLVER_PREFIX, RESOLVER_PREFIX, true);
 	}
-		
+	
 	public static String toResolverName(JavacNode field) {
 		return toResolverName(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean(field));
 	}
@@ -313,8 +317,7 @@ public class HandleResolver extends JavacAnnotationHandler<Resolver> {
 		return toAccessorName(ast, accessors, fieldName, isBoolean, RESOLVER_PREFIX, RESOLVER_PREFIX, true);
 	}
 	
-	private static java.util.List<String> toAllAccessorNames(AST<?, ?, ?> ast, AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean,
-			String booleanPrefix, String normalPrefix, boolean adhereToFluent) {
+	private static java.util.List<String> toAllAccessorNames(AST<?, ?, ?> ast, AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean, String booleanPrefix, String normalPrefix, boolean adhereToFluent) {
 		
 		if (Boolean.TRUE.equals(ast.readConfiguration(ConfigurationKeys.GETTER_CONSEQUENT_BOOLEAN))) isBoolean = false;
 		if (!isBoolean) {
@@ -352,7 +355,8 @@ public class HandleResolver extends JavacAnnotationHandler<Resolver> {
 		java.util.List<String> baseNames = new ArrayList<String>();
 		baseNames.add(fieldName.toString());
 		
-		// isPrefix = field is called something like 'isRunning', so 'running' could also be the fieldname.
+		// isPrefix = field is called something like 'isRunning', so 'running'
+		// could also be the fieldname.
 		String fName = fieldName.toString();
 		if (fName.startsWith("is") && fName.length() > 2 && !Character.isLowerCase(fName.charAt(2))) {
 			String baseName = fName.substring(2);
@@ -366,8 +370,7 @@ public class HandleResolver extends JavacAnnotationHandler<Resolver> {
 		return baseNames;
 	}
 	
-	private static String toAccessorName(AST<?, ?, ?> ast, AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean,
-			String booleanPrefix, String normalPrefix, boolean adhereToFluent) {
+	private static String toAccessorName(AST<?, ?, ?> ast, AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean, String booleanPrefix, String normalPrefix, boolean adhereToFluent) {
 		
 		fieldName = fieldName.toString();
 		if (fieldName.length() == 0) return null;
